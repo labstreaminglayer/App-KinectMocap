@@ -4,7 +4,7 @@
 #include <NuiApi.h>
 #include <lsl_cpp.h>
 #include <iostream>
-#include <boost/lexical_cast.hpp>
+#include <string>
 #include <stdlib.h>
 
 using namespace std;
@@ -35,7 +35,7 @@ void stream_from_sensor(int sensornum, bool smoothdata) {
 
 		cout << "opening outlet..." << endl;
 		char tmp[1024]; ;
-		stream_info info(string("KinectMocap")+=boost::lexical_cast<string>(sensornum),"Mocap",NUM_CHANNELS_PER_STREAM,30,cf_float32,string(tmp,tmp+wcstombs(tmp,sensor->NuiUniqueId(),sizeof(tmp))));
+		stream_info info(string("KinectMocap") += std::to_string(sensornum),"Mocap",NUM_CHANNELS_PER_STREAM,30,cf_float32,string(tmp,tmp+wcstombs(tmp,sensor->NuiUniqueId(),sizeof(tmp))));
 
 		// physical setup
 		xml_element setup = info.desc().append_child("setup");
@@ -45,16 +45,19 @@ void stream_from_sensor(int sensornum, bool smoothdata) {
 			.append_child_value("X","0.0")
 			.append_child_value("Y","0.0")
 			.append_child_value("Z","0.0");
-		cam.append_child_value("diagonal_fov",boost::lexical_cast<string>(NUI_CAMERA_DEPTH_NOMINAL_DIAGONAL_FOV).c_str());
-		cam.append_child_value("horizontal_fov",boost::lexical_cast<string>(NUI_CAMERA_DEPTH_NOMINAL_HORIZONTAL_FOV).c_str());
-		cam.append_child_value("vertical_fov",boost::lexical_cast<string>(NUI_CAMERA_DEPTH_NOMINAL_VERTICAL_FOV).c_str());
+		cam.append_child_value(
+			"diagonal_fov", std::to_string(NUI_CAMERA_DEPTH_NOMINAL_DIAGONAL_FOV).c_str());
+		cam.append_child_value(
+			"horizontal_fov", std::to_string(NUI_CAMERA_DEPTH_NOMINAL_HORIZONTAL_FOV).c_str());
+		cam.append_child_value(
+			"vertical_fov", std::to_string(NUI_CAMERA_DEPTH_NOMINAL_VERTICAL_FOV).c_str());
 
 		// markers
 		xml_element mrks = setup.append_child("markers");
 		for (int k=0;k<NUI_SKELETON_POSITION_COUNT;k++) {
 			mrks.append_child("marker")
 				.append_child_value("label",joint_names[k])
-				.append_child_value("id",boost::lexical_cast<std::string>(k).c_str());
+				.append_child_value("id", std::to_string(k).c_str());
 		}
 
 		// channel layout
@@ -83,10 +86,11 @@ void stream_from_sensor(int sensornum, bool smoothdata) {
 					.append_child_value("unit","normalized");
 			}
 			channels.append_child("channel")
-				.append_child_value("label",(string("SkeletonTrackingId")+=boost::lexical_cast<string>(s)).c_str())
+				.append_child_value(
+					"label", (string("SkeletonTrackingId") += std::to_string(s)).c_str())
 				.append_child_value("type","TrackingId");
-			channels.append_child("channel")
-				.append_child_value("label",(string("SkeletonQualityFlags")+=boost::lexical_cast<string>(s)).c_str());
+			channels.append_child("channel").append_child_value(
+				"label", (string("SkeletonQualityFlags") += std::to_string(s)).c_str());
 		}
 
 		// misc meta-data
